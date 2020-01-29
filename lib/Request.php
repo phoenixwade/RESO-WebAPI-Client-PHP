@@ -10,6 +10,7 @@ abstract class Request
     private static $validOutputFormats = array("json", "xml");
     private static $requestAcceptType = "";
 	private static $requestAcceptEncoding = "";
+	 private static $requestHeaders = array();
     /**
      * Sends GET request and returns output in specified format.
      *
@@ -39,23 +40,27 @@ abstract class Request
 
         // Build request URL
         $url = rtrim($api_request_url, "/") . "/" . $request;
-
-        // Set the accept type
-        if(self::$requestAcceptType) {
-            $accept = "application/".self::$requestAcceptType;
-        } else {
-            $accept = "*/*";
-        }
-
-        // Set headers
-        $headers = array(
-            "Accept: ".$accept,
-            "Authorization: Bearer ".$token
-        );
-		/// enable GZIP compression for post MLSGRID Api
-		if(self::$requestAcceptEncoding) {
-		 	$headers[] = "Accept-Encoding:".self::$requestAcceptEncoding;
-		}
+		//echo "<pre>";print_r(self::$requestHeaders);die;
+		if(empty(self::$requestHeaders)) {
+			// Set the accept type
+			if(self::$requestAcceptType) {
+				$accept = "application/".self::$requestAcceptType;
+			} else {
+				$accept = "*/*";
+			}
+	
+			// Set headers
+			$headers = array(
+				"Accept: ".$accept,
+				"Authorization: Bearer ".$token
+			);
+			/// enable GZIP compression for post MLSGRID Api
+			if(self::$requestAcceptEncoding) {
+				$headers[] = "Accept-Encoding:".self::$requestAcceptEncoding;
+			}
+		} else {
+			$headers = self::$requestHeaders;
+		}	
         // Send request
         $response = $curl->request("get", $url, $headers, null, false);
         if(!$response || !is_array($response) || $response[1] != 200) {
@@ -103,22 +108,24 @@ abstract class Request
 
         // Build request URL
         $url = rtrim($api_request_url, "/") . "/" . $request;
-
-        // Set the accept type
-        if(self::$requestAcceptType) {
-            $accept = "application/".self::$requestAcceptType;
-        } else {
-            $accept = "*/*";
-        }
-
-        $headers = array(
-            "Accept: ".$accept,
-            "Authorization: Bearer ".$token
-        );
-		if(self::$requestAcceptEncoding) {
-		 	$headers[] = "Accept-Encoding:".$requestAcceptEncoding;
-		}
-
+		if(empty(self::$requestHeaders)) {
+			// Set the accept type
+			if(self::$requestAcceptType) {
+				$accept = "application/".self::$requestAcceptType;
+			} else {
+				$accept = "*/*";
+			}
+	
+			$headers = array(
+				"Accept: ".$accept,
+				"Authorization: Bearer ".$token
+			);
+			if(self::$requestAcceptEncoding) {
+				$headers[] = "Accept-Encoding:".$requestAcceptEncoding;
+			}
+		} else {
+			$headers = self::$requestHeaders;
+		}		
         // Send request
         $response = $curl->request("post", $url, $headers, $params, false);
         if(!$response || !is_array($response) || $response[1] != 200) {
@@ -231,4 +238,12 @@ abstract class Request
        self::$requestAcceptEncoding = $encoding;
     }
 	
+	/**
+     * Sets request headers
+     *
+     * @param array
+     */
+    public static function setRequestHedares($headers = array()) {
+       self::$requestHeaders = $headers;
+    }
 }
