@@ -231,7 +231,7 @@ abstract class Request
     }
 	
 	/**
-     * Sets accep encoding
+     * Sets accept encoding
      *
      * @param string
      */
